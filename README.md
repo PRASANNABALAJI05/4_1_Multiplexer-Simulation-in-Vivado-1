@@ -89,16 +89,19 @@ endmodule
 ---
 ### 4:1 MUX Data flow Modelling
 ```verilog
-module MUX4_1_DATA(I,S,Y);
-input [3:0]I;
-input[1:0]S;
-output Y;
-wire [4:1]W;
-and g1(W[1],(~S[1]),(~S[0]),I[0]);
-and g2(W[2],(~S[1]),S[0],I[1]);
-and g3(W[3],S[1],(~S[0]),I[2]);
-and g4(W[4],S[1],S[0],I[3]);
-or g5(Y,W[1],W[2],W[3],W[4]);
+module mux4_dataflow (
+    input  wire I0, I1, I2, I3,
+    input  wire S0, S1,
+    output wire Y
+);
+    wire [4:1] w;
+
+    assign w[1] = I0 & ~S1 & ~S0; // S=00 → I0
+    assign w[2] = I1 & ~S1 &  S0; // S=01 → I1
+    assign w[3] = I2 &  S1 & ~S0; // S=10 → I2
+    assign w[4] = I3 &  S1 &  S0; // S=11 → I3
+
+    assign Y = w[1] | w[2] | w[3] | w[4];
 endmodule
  
 
