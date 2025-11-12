@@ -42,13 +42,11 @@ module MUX4_1_GATE (
 );
     wire w1, w2, w3, w4;
 
-    // AND gates with ~ usage
-    and g1(w1, I[0], ~S[0], ~S[1]); // Select I0
-    and g2(w2, I[1], ~S[0],  S[1]); // Select I1
-    and g3(w3, I[2],  S[0], ~S[1]); // Select I2
-    and g4(w4, I[3],  S[0],  S[1]); // Select I3
+    and g1(w1, I[0], ~S[0], ~S[1]); 
+    and g2(w2, I[1], ~S[0],  S[1]);
+    and g3(w3, I[2],  S[0], ~S[1]); 
+    and g4(w4, I[3],  S[0],  S[1]); 
 
-    // OR gate
     or g5(Y, w1, w2, w3, w4);
 endmodule
 ```
@@ -60,18 +58,12 @@ module tb_MUX4_1_GATE;
     reg [1:0] S;
     wire Y;
 
-    // Instantiate DUT
     MUX4_1_GATE uut (.I(I), .S(S), .Y(Y));
 
     initial begin
         $monitor("Time=%0t | I=%b | S=%b | Y=%b", $time, I, S, Y);
 
-        I = 4'b1010;
-        S = 2'b00; #10;
-        S = 2'b01; #10;
-        S = 2'b10; #10;
-        S = 2'b11; #10;
-
+   
         I = 4'b0010;
         S = 2'b00; #10;
         S = 2'b01; #10;
@@ -84,59 +76,56 @@ endmodule
 ```
 ## Simulated Output Gate Level Modelling
 
-<img width="1919" height="1079" alt="GATE (2)" src="https://github.com/user-attachments/assets/7f3fae93-da69-4360-8a0b-1813641dc7ae" />
+<img width="1919" height="1079" alt="Gate" src="https://github.com/user-attachments/assets/e05a7475-0034-434d-8b8e-672343c0131e" />
+
 
 ---
 ### 4:1 MUX Data flow Modelling
 ```verilog
-module mux4_dataflow (
-    input  wire I0, I1, I2, I3,
-    input  wire S0, S1,
+module MUX4_1_DATA (
+    input  wire  [3:0]I,
+    input  wire [1:0]S,
     output wire Y
 );
     wire [4:1] w;
 
-    assign w[1] = I0 & ~S1 & ~S0; // S=00 → I0
-    assign w[2] = I1 & ~S1 &  S0; // S=01 → I1
-    assign w[3] = I2 &  S1 & ~S0; // S=10 → I2
-    assign w[4] = I3 &  S1 &  S0; // S=11 → I3
+    assign w[1] = I[0] & ~S[1] & ~S[0]; 
+    assign w[2] = I[1] & ~S[1] &  S[0]; 
+    assign w[3] = I[2] &  S[1] & ~S[0]; 
+    assign w[4] = I[3] &  S[1] &  S[0]; 
 
     assign Y = w[1] | w[2] | w[3] | w[4];
 endmodule
- 
 
 ```
 ### 4:1 MUX Data flow Modelling- Testbench
 ```verilog
-`timescale 1ns/1ps
-module MUX4_1_DATA_tb;
-reg [3:0]I;
-reg [1:0]S;
-wire Y;
-MUX4_1_DATA uut(I,S,Y);
-initial
-begin
-I=4'B0001;
-S=2'b00;
-#10
-$display("Selection is %b %b , output : %b ", S[1],S[0],Y);
-S=2'b01;
-#10
-$display("Selection is %b %b , output : %b ", S[1],S[0],Y);
-S=2'b10;
-#10
-$display("Selection is %b %b , output : %b ", S[1],S[0],Y);
-S=2'b11;
-#10
-$display("Selection is %b %b , output : %b ", S[1],S[0],Y);
-$finish;
-end 
+`timescale 1ns / 1ps
+    module tb_MUX4_1_DATA;
+    reg [3:0] I;
+    reg [1:0] S;
+    wire Y;
+
+   MUX4_1_DATA uut (.I(I), .S(S), .Y(Y));
+
+ initial begin
+  I = 4'b0000;
+  S = 2'b00;
+  #5; 
+  I = 4'b1110;
+  S = 2'b00; #10;
+  S = 2'b01; #10;
+  S = 2'b10; #10;
+  S = 2'b11; #10;
+        $finish;
+    end
 endmodule
+
 
 ```
 ## Simulated Output Dataflow Modelling
 
-<img width="1919" height="1079" alt="DATA (2)" src="https://github.com/user-attachments/assets/fba7f396-83f2-4e42-9b3b-d243e5a65bba" />
+<img width="1919" height="1079" alt="DATA" src="https://github.com/user-attachments/assets/06dccfa3-68c8-4f81-8754-bf9d094154fe" />
 
 ---
 ### 4:1 MUX Behavioral Implementation
@@ -185,7 +174,7 @@ endmodule
 
 ```
 ## Simulated Output Behavioral Modelling
-<img width="1919" height="1079" alt="BEHAVIOURAL" src="https://github.com/user-attachments/assets/8159e8fb-5c89-4ff4-8ff1-c885b8f9406b" />
+<img width="1919" height="1079" alt="BEHAVIOURAL" src="https://github.com/user-attachments/assets/e885459f-6372-4b67-af93-1c4797304695" />
 
 
 
@@ -195,56 +184,53 @@ endmodule
 
 
 ```verilog
-module MUX21(A,B,S,Z);
-input A,B,S;
-output Z;
-wire W1,W2;
-and g1(W1,A,~S);
-and g2(W2,B,S);
-or g3(Z,W1,W2);
+module MUX_2_1(a, b, s, z);
+input a, b, s;
+output z;
+wire ns, w1, w2;
+not g0(ns, s);
+and g1(w1, a, ns);
+and g2(w2, b, s);
+or  g3(z, w1, w2);
 endmodule
 
-module MUX4_1_STRUCTURAL(I,S,Y);
-input [3:0]I;
-input [1:0]S;
+module MUX4_1(I,S,Y);
+input [3:0] I;
+input [1:0] S;
 output Y;
-wire [2:1]W;
-MUX21 M1(.Z(W[1]),.A(I[0]),.B(I[1]),.S(S[1]));
-MUX21 M2(.Z(W[2]),.A(I[2]),.B(I[3]),.S(S[1]));
-MUX21 M3(.Z(Y),.A(W[1]),.B(W[2]),.S(S[0]));
+wire w1,w2;
+  MUX_2_1 m1(I[0], I[1], S[0], w1);  
+  MUX_2_1 m2(I[2], I[3], S[0], w2);  
+  MUX_2_1 m3(w1, w2, S[1], Y);
 endmodule
 
 ```
 ### Testbench Implementation
 ```verilog
  `timescale 1ns / 1ps
-module MUX4_1_STRUCTURAL_tb;
-reg [3:0]I;
-reg [1:0]S;
-wire Y;
-MUX4_1_STRUCTURAL uut(I,S,Y);
-initial
-begin
-I=4'B1000;
-S=2'b00;
-#10
-$display("Selection is %b %b , output : %b ", S[1],S[0],Y);
-S=2'b01;
-#10
-$display("Selection is %b %b , output : %b ", S[1],S[0],Y);
-S=2'b10;
-#10
-$display("Selection is %b %b , output : %b ", S[1],S[0],Y);
-S=2'b11;
-#10
-$display("Selection is %b %b , output : %b ", S[1],S[0],Y);
-$finish;
-end
+module tb_MUX4_1;
+    reg [3:0] I;
+    reg [1:0] S;
+    wire Y;
+
+    MUX4_1 uut (.I(I), .S(S), .Y(Y));
+
+    initial begin
+        $monitor("Time=%0t | I=%b | S=%b | Y=%b", $time, I, S, Y);
+
+        I = 4'b1110;
+        S = 2'b00; #10;
+        S = 2'b01; #10;
+        S = 2'b10; #10;
+        S = 2'b11; #10;
+
+        $finish;
+    end
 endmodule
 ```
 ## Simulated Output Structural Modelling
 
-<img width="1919" height="1079" alt="STRUCTURL" src="https://github.com/user-attachments/assets/014a04b4-5e8b-44d0-8309-8b8ab5886a82" />
+<img width="1919" height="1079" alt="Structural" src="https://github.com/user-attachments/assets/da282517-3d71-44a5-a60e-17a3739fa40b" />
 
 ---
 ### CONCLUSION
